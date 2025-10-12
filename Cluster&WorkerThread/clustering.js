@@ -8,8 +8,26 @@ IPC (inter-process communication) channels.
 the workers (on Linux and macOS; Windows behaves differently).
 6. Each worker handles its own requests independently, allowing parallelism across CPU cores.
 7. If a worker crashes, the master can spawn a new one automatically.
+                 ┌───────────────────────────────┐
+                 │ Primary Process (PID 1000)     │
+                 │ cluster.isPrimary = true       │
+                 │                               │
+                 │ → cluster.fork() x 8 (workers) │
+                 │ → Monitors, restarts workers   │
+                 └─────────────┬─────────────────┘
+                               │
+ ┌─────────────────────────────┼─────────────────────────────┐
+ │                             │                             │
+ ▼                             ▼                             ▼
+[Worker 1 (PID 1001)]   [Worker 2 (PID 1002)]        ... [Worker 8 (PID 1008)]
+cluster.isPrimary = false
+↓
+createServer()
+↓
+HTTP server listens on port 3000
+↓
+Can spawn Worker Threads for CPU work
 */
-
 import cluster from "cluster";
 import os from "os";
 import http from "http";
